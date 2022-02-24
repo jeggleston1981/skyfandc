@@ -1,0 +1,47 @@
+substitutions:
+  device_name: "micro-skydc"
+  fan_name: "SkyFanDC no Light"
+  
+esphome:
+  name: "${device_name}"
+  name_add_mac_suffix: true
+  project:
+    name: jimmy.micro_skydc
+    version: "0.1"
+esp8266:
+  board: d1_mini
+
+#This may not be required in the future
+external_components:
+  - source:
+      type: git
+      url: https://github.com/jeggleston1981/esphome
+      ref: dev
+    components: [ tuya ]
+
+api:
+
+# Logger not using the serial port as tuya needs it
+logger:
+  baud_rate: 0
+  
+ota:
+
+wifi:
+  ap:
+    password: ""
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+  
+tuya:
+
+fan:
+  - platform: "tuya"
+    name: "${fan_name}"
+    switch_datapoint: 1
+    speed_datapoint: 3
+    direction_datapoint: 8
+    speed_count: 6
