@@ -1,0 +1,9 @@
+# SkyFan DC ESPhome Setup
+The basic yaml config for the SkyfanDC flashing it onto your ESP8266 module and put it in the fan controller.
+If you would like the physical module it is for ESPhome and Home Assistant only www.egglec.com.au
+This module will not work with Tuya Smart App
+
+Video about the fan : https://youtu.be/DethhMjQXy0
+
+EasyEDA files : https://oshwlab.com/james_6977/sky-fan-dc
+
