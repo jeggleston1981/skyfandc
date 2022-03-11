@@ -1,13 +1,23 @@
-substitutions:
+ssubstitutions:
   device_name: "micro-skydc"
   fan_name: "SkyFanDC no Light"
   
 esphome:
   name: "${device_name}"
-  name_add_mac_suffix: true
+  name_add_mac_suffix: false
   project:
     name: jimmy.micro_skydc
     version: "0.1"
+  on_boot: #Setup temperature reading so you don't get a random reading come through at startup
+    priority: -100
+    then:
+      - switch.turn_on: ntc_vcc
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+      
 esp8266:
   board: d1_mini
 
@@ -18,6 +28,9 @@ external_components:
       url: https://github.com/jeggleston1981/esphome
       ref: dev
     components: [ tuya ]
+#Dashboard import if you want to t adopt the device on your esphome dashboard
+dashboard_import:
+  package_import_url: github://jeggleston1981/skyfandc/micro_skyfan.yaml
 
 api:
 
@@ -30,7 +43,7 @@ ota:
 wifi:
   ap:
     password: ""
-
+    
 captive_portal:
 
 uart:
@@ -47,3 +60,51 @@ fan:
     speed_datapoint: 3
     direction_datapoint: 8
     speed_count: 6
+    
+#Bonus temperature sensor
+sensor:
+#Template sensor that sends the correct reading through to Home Assistant
+  - platform: template
+    name: "SkyFanDC Temperature"
+    id: skyfan_temp
+#ADC sensor to get the voltage drop on the thermister
+  - platform: adc
+    id: temp_voltage
+    pin: 17
+#Use voltage drop to calculate resistance of the thermister
+  - platform: resistance
+    sensor: temp_voltage
+    configuration: DOWNSTREAM
+    resistor: 100kOhm
+    id: temp_resistance
+    reference_voltage: 3.3
+#Use resistance to calculate the temperature
+  - platform: ntc
+    sensor: temp_resistance
+    calibration:
+      b_constant: 3435
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    id: ntc_temp
+#Only turn on the power to the thermister to check temp, to stop self warming effect
+interval:
+  - interval: 30s
+    then:
+      - switch.turn_on: ntc_vcc
+      - switch.turn_on: led
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+      - delay: 500ms
+      - switch.turn_off: led
+switch:
+  - platform: gpio
+    pin: 4
+    id: ntc_vcc
+  - platform: gpio
+    pin:
+      number: 2
+      inverted: true
+    id: led
