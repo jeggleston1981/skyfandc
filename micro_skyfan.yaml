@@ -3,7 +3,7 @@ substitutions:
   fan_name: "SkyFanDC no Light"
   
 esphome:
-  name: "${device_name}"
+  name: ${device_name}
   name_add_mac_suffix: false
   project:
     name: jimmy.micro_skydc
