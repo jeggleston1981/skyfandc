@@ -105,6 +105,6 @@ switch:
     id: ntc_vcc
   - platform: gpio
     pin:
-      number: 4 //Change to 2 to activate the status light
+      number: 4 #Change to 2 to activate the status light
       inverted: true
     id: led
