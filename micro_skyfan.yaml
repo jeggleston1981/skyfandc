@@ -28,7 +28,7 @@ external_components:
       url: https://github.com/jeggleston1981/esphome
       ref: dev
     components: [ tuya ]
-#Dashboard import if you want to t adopt the device on your esphome dashboard
+#Dashboard import if you want to adopt the device on your esphome dashboard
 dashboard_import:
   package_import_url: github://jeggleston1981/skyfandc/micro_skyfan.yaml
 
@@ -55,7 +55,7 @@ tuya:
 
 fan:
   - platform: "tuya"
-    name: "${fan_name}"
+    name: ${fan_name}
     switch_datapoint: 1
     speed_datapoint: 3
     direction_datapoint: 8
