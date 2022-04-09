@@ -1,6 +1,6 @@
 substitutions:
-  device_name: "micro-skydc"
-  fan_name: "SkyFanDC no Light"
+  device_name: micro-skydc
+  fan_name: SkyFanDC no Light
   
 esphome:
   name: ${device_name}
