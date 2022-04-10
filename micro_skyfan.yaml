@@ -1,6 +1,6 @@
 substitutions:
   device_name: micro-skydc
-  fan_name: SkyFanDC no Light
+  fan_name: SkyFanDC
   
 esphome:
   name: ${device_name}
@@ -65,7 +65,7 @@ fan:
 sensor:
 #Template sensor that sends the correct reading through to Home Assistant
   - platform: template
-    name: "SkyFanDC Temperature"
+    name: SkyFanDC-Temperature
     id: skyfan_temp
 #ADC sensor to get the voltage drop on the thermister
   - platform: adc
