@@ -1,9 +1,9 @@
 substitutions:
-  device_name: micro-skydc
+  name: easy_skyfandc
   fan_name: SkyFanDC
   
 esphome:
-  name: ${device_name}
+  name: ${name}
   name_add_mac_suffix: false
   project:
     name: jimmy.easy_skyfandc
@@ -41,6 +41,12 @@ logger:
 ota:
 
 wifi:
+# Uncomment below to set a static IP
+  # manual_ip:
+  #   static_ip: device_ip
+  #   gateway: gateway_ip
+  #   subnet: 255.255.255.0
+  #   dns1: gateway_ip
   ap:
     password: ""
     
@@ -106,6 +112,6 @@ switch:
     id: ntc_vcc
   - platform: gpio
     pin:
-      number: 4 #Change to 2 to activate the status light
+      number: 13 #Change to 2 to activate the status light
       inverted: true
     id: led
