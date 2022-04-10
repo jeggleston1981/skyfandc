@@ -1,12 +1,12 @@
 substitutions:
-  name: micro-skydc
+  device_name: micro-skydc
   fan_name: SkyFanDC
   
 esphome:
-  name: ${name}
+  name: ${device_name}
   name_add_mac_suffix: false
   project:
-    name: jimmy.micro_skydc
+    name: jimmy.easy_skyfandc
     version: "0.1"
   on_boot: #Setup temperature reading so you don't get a random reading come through at startup
     priority: -100
@@ -54,7 +54,7 @@ uart:
 tuya:
 
 fan:
-  - platform: "tuya"
+  - platform: tuya
     name: ${fan_name}
     switch_datapoint: 1
     speed_datapoint: 3
@@ -65,8 +65,9 @@ fan:
 sensor:
 #Template sensor that sends the correct reading through to Home Assistant
   - platform: template
-    name: SkyFanDC-Temperature
+    name: SkyFanDC-Temp
     id: skyfan_temp
+    disabled_by_default: true
 #ADC sensor to get the voltage drop on the thermister
   - platform: adc
     id: temp_voltage
