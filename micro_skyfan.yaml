@@ -1,6 +1,7 @@
 substitutions:
   name: easy_skyfandc
   fan_name: SkyFanDC
+  temp_name: SkyFanDC-Temp
   
 esphome:
   name: ${name}
@@ -12,11 +13,14 @@ esphome:
     priority: -100
     then:
       - switch.turn_on: ntc_vcc
+      - switch.turn_on: led
       - component.update: temp_voltage
       - switch.turn_off: ntc_vcc
       - sensor.template.publish:
           id: skyfan_temp
           state: !lambda 'return id(ntc_temp).state;'
+      - delay: 1s
+      - switch.turn_off: led
       
 esp8266:
   board: d1_mini
@@ -28,6 +32,7 @@ external_components:
       url: https://github.com/jeggleston1981/esphome
       ref: dev
     components: [ tuya ]
+    
 #Dashboard import if you want to adopt the device on your esphome dashboard
 dashboard_import:
   package_import_url: github://jeggleston1981/skyfandc/micro_skyfan.yaml
@@ -71,13 +76,14 @@ fan:
 sensor:
 #Template sensor that sends the correct reading through to Home Assistant
   - platform: template
-    name: SkyFanDC-Temp
+    name: ${temp_name}
     id: skyfan_temp
     disabled_by_default: true
 #ADC sensor to get the voltage drop on the thermister
   - platform: adc
     id: temp_voltage
     pin: 17
+    update_interval: never
 #Use voltage drop to calculate resistance of the thermister
   - platform: resistance
     sensor: temp_voltage
@@ -98,20 +104,18 @@ interval:
   - interval: 30s
     then:
       - switch.turn_on: ntc_vcc
-      - switch.turn_on: led
       - component.update: temp_voltage
       - switch.turn_off: ntc_vcc
       - sensor.template.publish:
           id: skyfan_temp
           state: !lambda 'return id(ntc_temp).state;'
-      - delay: 500ms
-      - switch.turn_off: led
+
 switch:
   - platform: gpio
     pin: 4
     id: ntc_vcc
   - platform: gpio
     pin:
-      number: 13 #Change to 2 to activate the status light
+      number: 2
       inverted: true
     id: led
