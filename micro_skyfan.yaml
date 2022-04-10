@@ -1,9 +1,9 @@
 substitutions:
-  device_name: micro-skydc
+  name: micro-skydc
   fan_name: SkyFanDC
   
 esphome:
-  name: ${device_name}
+  name: ${name}
   name_add_mac_suffix: false
   project:
     name: jimmy.micro_skydc
