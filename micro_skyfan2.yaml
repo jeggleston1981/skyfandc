@@ -1,0 +1,127 @@
+substitutions:
+  device_name: easy-skyfandc-1
+  fan_name: SkyFanDC
+  temp_name: SkyFanDC-Temp
+esphome:
+  name: ${device_name}
+  name_add_mac_suffix: false
+  project:
+    name: jimmy.easy_skyfandc
+    version: "0.2"
+  on_boot: #Setup temperature reading so you don't get a random reading come through at startup
+    priority: -100
+    then:
+      - switch.turn_on: ntc_vcc
+      - switch.turn_on: led
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+      - delay: 2s
+      - switch.turn_off: led
+      
+esp8266:
+  board: d1_mini
+#web_server:
+#  port: 80
+
+#This may not be required in the future
+external_components:
+  - source:
+      type: git
+      url: https://github.com/jeggleston1981/esphome
+      ref: dev
+    components: [ tuya ]
+#Dashboard import if you want to adopt the device on your esphome dashboard
+dashboard_import:
+  package_import_url: github://jeggleston1981/skyfandc/micro_skyfan2.yaml
+
+api:
+
+# Logger not using the serial port as tuya needs it
+logger:
+  baud_rate: 0
+
+# Version 0.2 has an i2c JST SH 4Pin Plug and uses the following pins
+# Version 0.1 did use pin 4 as the power pin for the NTC
+i2c:
+  sda: 4
+  scl: 5
+  scan: true
+ota:
+
+wifi:
+  ap:
+    password: ""
+    
+captive_portal:
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+  
+tuya:
+
+fan:
+  - platform: tuya
+    name: ${fan_name}
+    switch_datapoint: 1
+    speed_datapoint: 3
+    direction_datapoint: 8
+    speed_count: 6
+    
+#Bonus temperature sensor
+sensor:
+#Template sensor that sends the correct reading through to Home Assistant
+  - platform: template
+    name: ${temp_name}
+    id: skyfan_temp
+    disabled_by_default: true
+    
+#ADC sensor to get the voltage drop on the thermister
+  - platform: adc
+    id: temp_voltage
+    pin: 17
+    update_interval: never
+#Use voltage drop to calculate resistance of the thermister
+  - platform: resistance
+    sensor: temp_voltage
+    configuration: DOWNSTREAM
+    resistor: 100kOhm
+    id: temp_resistance
+    reference_voltage: 3.3
+#Use resistance to calculate the temperature
+  - platform: ntc
+    sensor: temp_resistance
+    calibration:
+      b_constant: 3435
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    id: ntc_temp
+#Example I2C temperature sensor
+  - platform: tmp117
+    name: "SkyFanDC TMP117"
+    update_interval: 60s
+    disabled_by_default: true
+
+#Only turn on the power to the thermister to check temp, to stop self warming effect
+interval:
+  - interval: 30s
+    then:
+      - switch.turn_on: ntc_vcc
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+switch:
+  - platform: gpio
+    pin: 14
+    id: ntc_vcc
+  - platform: gpio
+    pin:
+      number: 2
+      inverted: true
+    id: led
