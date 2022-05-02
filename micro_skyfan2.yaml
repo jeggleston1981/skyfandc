@@ -1,10 +1,10 @@
 substitutions:
-  device_name: easy-skyfandc-1
+  device_name: easy-skyfandc
   fan_name: SkyFanDC
   temp_name: SkyFanDC-Temp
 esphome:
   name: ${device_name}
-  name_add_mac_suffix: false
+  name_add_mac_suffix: true
   project:
     name: jimmy.easy_skyfandc
     version: "0.2"
