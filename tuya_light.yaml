@@ -1,0 +1,18 @@
+# source https://github.com/SirMrDexter/skyfandc
+---
+substitutions:
+  light_name: "SkyFan DC Light"
+
+light:
+  - id: skyfan_light
+    platform: tuya
+    name: ${light_name}
+    switch_datapoint: 15
+    dimmer_datapoint: 16
+    min_value: 0
+    max_value: 5
+    color_temperature_datapoint: 19
+    color_temperature_max_value: 2
+    cold_white_color_temperature: 2
+    warm_white_color_temperature: 1
+    color_temperature_invert: true

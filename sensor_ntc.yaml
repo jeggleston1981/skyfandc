@@ -1,0 +1,68 @@
+# Bonus temperature sensor
+---
+substitutions:
+  temp_name: SkyFanDC-Temp
+
+# Setup temperature reading so you don't get a random reading come through at 
+# startup
+esphome:
+  on_boot: 
+    priority: -100
+    then:
+      - switch.turn_on: ntc_vcc
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+
+sensor:
+  #Template sensor that sends the correct reading through to Home Assistant
+  - id: skyfan_temp
+    platform: template
+    name: ${temp_name}
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    accuracy_decimals: 0
+    disabled_by_default: true
+  
+  #ADC sensor to get the voltage drop on the thermister
+  - id: temp_voltage
+    platform: adc
+    pin: 17
+    update_interval: never
+  
+  #Use voltage drop to calculate resistance of the thermister
+  - id: temp_resistance
+    platform: resistance
+    sensor: temp_voltage
+    configuration: DOWNSTREAM
+    resistor: 100kOhm
+    reference_voltage: 3.3
+  
+  #Use resistance to calculate the temperature
+  - id: ntc_temp
+    platform: ntc
+    sensor: temp_resistance
+    calibration:
+      b_constant: 3435
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+
+# Only turn on the power to the thermister to check temp, to stop self warming 
+# effect
+interval:
+  - interval: 30s
+    then:
+      - switch.turn_on: ntc_vcc
+      - component.update: temp_voltage
+      - switch.turn_off: ntc_vcc
+      - sensor.template.publish:
+          id: skyfan_temp
+          state: !lambda 'return id(ntc_temp).state;'
+
+switch:
+  - id: ntc_vcc
+    platform: gpio
+    pin: 14
