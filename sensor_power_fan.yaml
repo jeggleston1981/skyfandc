@@ -8,7 +8,7 @@ substitutions:
 sensor:
   - id: fan_power
     platform: template
-    name: ${power_fan_name} power
+    name: ${power_fan_name}
     update_interval: 30s
     unit_of_measurement: "W"
     device_class: "power"

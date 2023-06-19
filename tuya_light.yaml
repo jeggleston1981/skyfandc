@@ -1,4 +1,4 @@
-# source https://github.com/SirMrDexter/skyfandc
+# thanks https://github.com/SirMrDexter/skyfandc
 ---
 substitutions:
   light_name: "SkyFan DC Light"
@@ -13,6 +13,7 @@ light:
     max_value: 5
     color_temperature_datapoint: 19
     color_temperature_max_value: 2
-    cold_white_color_temperature: 2
-    warm_white_color_temperature: 1
+    cold_white_color_temperature: 6500K
+    warm_white_color_temperature: 3000K
     color_temperature_invert: true
+    restore_mode: ALWAYS_ON
