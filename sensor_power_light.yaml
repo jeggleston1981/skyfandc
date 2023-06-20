@@ -1,6 +1,9 @@
-# This exposes Power Sensor to the frontend (like Home Assistant). The power 
-# value (Watts) for each brightness is estimated from the Skyfan DC light 
-# specification.
+# This exposes a faux Power Sensor to the frontend (like Home Assistant). 
+# The power value (Watts) for each brightness is estimated from the Skyfan DC
+# light specification.
+#
+# **WARNING**
+# Untested and incomplete.
 ---
 substitutions:
   power_light_name: $light_name power
@@ -9,13 +12,10 @@ sensor:
   - id: power_light
     platform: template
     name: ${power_light_name}
-#    update_interval: 30s
     unit_of_measurement: "W"
     device_class: "power"
     state_class: "measurement"
-    accuracy_decimals: 0
-    lambda: |-
-      return (0.0);
+    accuracy_decimals: 1
     disabled_by_default: true
 
 interval:
@@ -33,4 +33,4 @@ interval:
             - sensor.template.publish:
                 id: power_light
                 state: !lambda |-
-                  return 0.0; 
+                  return 0.0;

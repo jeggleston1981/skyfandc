@@ -1,5 +1,6 @@
-# This exposes Power Sensor to the frontend (like Home Assistant). The power 
-# values (Watts) for each fan speed is sourced from the Skyfan DC datasheets.
+# This exposes a faux Power Sensor to the frontend (like Home Assistant).
+# The power values (Watts) for each fan and speed speed is sourced from the
+# Skyfan DC datasheets.
 ---
 substitutions:
   power_fan_name: $fan_name power

@@ -1,4 +1,8 @@
-# thanks https://github.com/SirMrDexter/skyfandc
+# This exposes a light entity to the frontend (like Home Assistant). 
+# Tuya datapoints thanks of https://github.com/SirMrDexter/skyfandc
+#
+# **WARNING**
+# Untested and incomplete.
 ---
 substitutions:
   light_name: "SkyFan DC Light"
@@ -11,9 +15,28 @@ light:
     dimmer_datapoint: 16
     min_value: 0
     max_value: 5
-    color_temperature_datapoint: 19
-    color_temperature_max_value: 2
-    cold_white_color_temperature: 6500K
-    warm_white_color_temperature: 3000K
-    color_temperature_invert: true
+#    color_temperature_datapoint: 19
+#    color_temperature_max_value: 2
+#    color_temperature_invert: true
+#    color_mode: BRIGHTNESS # [color_mode] is an invalid option for [light.tuya]. 
     restore_mode: ALWAYS_ON
+    disabled_by_default: true
+
+# select:
+#   - id: datapoint_light_color_temperature
+#     platform: tuya
+#     tuya_id: tuyamcu
+#     name: ${light_name} Color Temperature
+#     enum_datapoint: 19
+#     options:
+#       0: 'WARM WHITE (3000K)'
+#       1: 'NATURAL WHITE (4200K)'
+#       2: 'COOL WHITE (6500K)'
+#     disabled_by_default: true
+
+# tuya:
+#   id: tuyamcu
+#   on_datapoint_update:
+#     - sensor_datapoint: 15
+#       datapoint_type: bool
+#       then: []
