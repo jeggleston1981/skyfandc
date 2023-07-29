@@ -1,0 +1,30 @@
+# This exposes a faux Power Sensor to the frontend (like Home Assistant).
+# The power values (Watts) for each fan and speed speed is sourced from the
+# Skyfan DC datasheets.
+---
+substitutions:
+  power_fan_name: $fan_name power
+  skyfan_model: "SKY1203"
+
+sensor:
+  - id: fan_power
+    platform: template
+    name: ${power_fan_name}
+    update_interval: 30s
+    unit_of_measurement: "W"
+    device_class: "power"
+    state_class: "measurement"
+    accuracy_decimals: 1
+    lambda: |-
+      float SKY903[7] = {0,3,4.8,7,12,19.5,32};
+      float SKY1203[7] = {0,3.6,5.4,8,15,22,32.5};
+      float SKY1303[7] = {0,3.9,5.8,9,15.6,25.2,31.8};
+      float SKY1503[7] = {0,3.9,6,9,16,26,44.2};
+      float SKY1204[7] = {0,3.8,5.8,9,17,27,30};
+      float SKY1404[7] = {0,3.5,5.5,8,15,23,38};      
+      if (id(skyfan).state) {
+        return $skyfan_model[ id(skyfan).speed ]; 
+      } else {
+        return 0.0;
+      }
+    disabled_by_default: true

@@ -1,0 +1,233 @@
+# This exposes a fan entity to the frontend (like Home Assistant).
+---
+substitutions:
+  fan_name: "SkyFan DC Fan"
+
+fan:
+  - id: skyfan
+    platform: speed
+    output: skyfan_speed
+    direction_output: skyfan_direction
+    name: ${fan_name}
+    restore_mode: NO_RESTORE
+    disabled_by_default: false
+    speed_count: 6
+
+output:
+  # When the fan speed is changed by the fan entity in Home Assistant, update
+  # the tuyamcu datapoints that control the fan motor.
+  - id: skyfan_speed
+    platform: template
+    type: float
+    write_action: 
+      then:
+        - if:
+            condition:
+              - switch.is_on: update_fan
+            then:
+              - switch.turn_off: update_fan            
+            else:             
+              - logger.log:
+                  format: "skyfan_speed is %1f"
+                  args: [ 'state' ]
+              - select.set_index:
+                  id: datapoint_direction
+                  index: !lambda |-
+                    return (id(skyfan).direction != FanDirection::FORWARD ? 1 : 0);              
+              - if:
+                  condition:
+                    lambda: 'return state < 0.1 ;'
+                  then:
+                    - switch.turn_off: datapoint_onoff
+                  else:
+                    - switch.turn_on: datapoint_onoff                                     
+                    - if:
+                        condition:
+                          lambda: 'return (state < 0.3);'
+                        then:
+                          - select.set_index:
+                              id: datapoint_mode
+                              index: 0
+                          - number.set:
+                              id: datapoint_speed
+                              value: 1
+                        else:
+                          - if:
+                              condition:
+                                lambda: 'return (state < 0.4);'
+                              then:
+                                - select.set_index:
+                                    id: datapoint_mode
+                                    index: 1
+                              else:                        
+                                - select.set_index:
+                                    id: datapoint_mode
+                                    index: 0
+                                - if:
+                                    condition:
+                                      lambda: 'return (state < 0.6);'
+                                    then:
+                                      - number.set:
+                                          id: datapoint_speed
+                                          value: 2
+                                    else:                  
+                                      - if:
+                                          condition:
+                                            lambda: 'return (state < 0.8);'
+                                          then:
+                                            - number.set:
+                                                id: datapoint_speed
+                                                value: 3
+                                          else:                              
+                                            - if:
+                                                condition:
+                                                  lambda: 'return (state < 0.9);'
+                                                then:
+                                                  - number.set:
+                                                      id: datapoint_speed
+                                                      value: 4
+                                                else:                              
+                                                  - number.set:
+                                                      id: datapoint_speed
+                                                      value: 5        
+
+  - id: skyfan_direction
+    platform: template
+    type: binary
+    write_action: []
+
+tuya:
+  id: tuyamcu
+  on_datapoint_update:
+    - sensor_datapoint: 1
+      datapoint_type: bool
+      then:
+        - switch.turn_on: update_fan
+    - sensor_datapoint: 2
+      datapoint_type: enum
+      then:
+        - switch.turn_on: update_fan 
+    - sensor_datapoint: 3
+      datapoint_type: int
+      then:
+        - switch.turn_on: update_fan
+    - sensor_datapoint: 8
+      datapoint_type: enum
+      then:
+        - switch.turn_on: update_fan
+    - sensor_datapoint: 22
+      datapoint_type: enum
+      then: []
+
+switch:
+  # A datapoint has changed in tuyamcu. Update the fan entity in Home Assistant 
+  # to be consistent with the new datapoint values.
+  - id: update_fan
+    platform: template
+    optimistic: true
+    turn_on_action:
+      then:
+        - delay: 200ms
+        - if:
+            condition: 
+              - switch.is_on: datapoint_onoff
+            then:
+              - if:
+                  condition:
+                    - lambda: 'return ( id(datapoint_mode).active_index() == 1 );'
+                  then:
+                    - logger.log: "update_fan ECO therefore set speed 2"
+                    - fan.turn_on: 
+                        id: skyfan
+                        speed: '2'
+                        direction: !lambda |-
+                          bool val = ( id(datapoint_direction).active_index() != 0 );
+                          return val ? FanDirection::REVERSE : FanDirection::FORWARD;
+                  else:
+                    - if:
+                        condition:
+                          - lambda: 'return ( id(datapoint_speed).state == 1 );'
+                        then:
+                          - logger.log: "update_fan Set speed 1"
+                          - fan.turn_on: 
+                              id: skyfan
+                              speed: '1'
+                              direction: !lambda |-
+                                bool val = ( id(datapoint_direction).active_index() != 0 );
+                                return val ? FanDirection::REVERSE : FanDirection::FORWARD;
+                        else:
+                          - logger.log: "update_fan Set speed plus 1"
+                          - fan.turn_on: 
+                              id: skyfan
+                              speed: !lambda |-
+                                return (id(datapoint_speed).state + 1);
+                              direction: !lambda |-
+                                bool val = ( id(datapoint_direction).active_index() != 0 );
+                                return val ? FanDirection::REVERSE : FanDirection::FORWARD;
+            else:
+              - logger.log: "update_fan Turn off"
+              - fan.turn_off: 
+                  id: skyfan            
+
+  - id: datapoint_onoff
+    platform: tuya
+    tuya_id: tuyamcu
+    name: ${fan_name} Switch
+    switch_datapoint: 1
+    internal: true
+  
+select:
+  - id: datapoint_mode
+    platform: tuya
+    tuya_id: tuyamcu
+    name: ${fan_name} Mode
+    enum_datapoint: 2
+    options:
+      0: NORMAL
+      1: ECO
+      2: SLEEP
+    disabled_by_default: true
+
+  - id: datapoint_direction
+    platform: tuya
+    tuya_id: tuyamcu
+    name: ${fan_name} Direction
+    enum_datapoint: 8
+    options:
+      0: FORWARD
+      1: REVERSE
+    internal: true
+
+  - id: datapoint_timer
+    platform: tuya
+    tuya_id: tuyamcu
+    name: ${fan_name} Timer
+    enum_datapoint: 22
+    options:
+      0: NIL
+      1: 1_HOUR
+      2: 2_HOUR
+      3: 3_HOUR
+      4: 4_HOUR
+      5: 5_HOUR
+      6: 6_HOUR
+      7: 7_HOUR
+      8: 8_HOUR
+      9: 9_HOUR
+      10: 10_HOUR
+      11: 11_HOUR
+      12: 12_HOUR
+    disabled_by_default: true
+
+number:
+
+  - id: datapoint_speed
+    platform: tuya
+    tuya_id: tuyamcu
+    name: ${fan_name} Speed
+    number_datapoint: 3
+    min_value: 0
+    max_value: 5
+    step: 1
+    internal: true
+
