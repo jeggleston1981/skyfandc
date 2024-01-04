@@ -10,7 +10,9 @@ packages:
   skyfan.sensor_power_fan: !include
     file: sensor_power_fan.yaml 
   skyfan.sensor_power_light: !include
-     file: sensor_power_light.yaml 
+     file: sensor_power_light.yaml
+  skyfan.sensor_rssi: !include
+     file: sensor_rssi.yaml
 
 substitutions:
   device_name: easy-skyfandc
@@ -19,6 +21,7 @@ substitutions:
   temp_name: SkyFanDC-Temp
   tmp117_name: "SkyFanDC TMP117"  
   skyfan_model: "SKY1203"
+  fan_rssi: "SkyFanDC-RSSI"
 
 esphome:
   name: ${device_name}
