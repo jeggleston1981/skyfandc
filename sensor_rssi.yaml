@@ -1,0 +1,9 @@
+# Display WIFI rssi as a sensor in Home Assistant
+
+substitutions:
+  fan_rssi: $fan_rssi
+
+sensor:
+  - platform: wifi_signal
+    name: ${fan_rssi}
+    update_interval: 60s
