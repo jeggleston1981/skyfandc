@@ -1,0 +1,79 @@
+esphome:
+  name: ${device_name}
+  name_add_mac_suffix: true
+  project:
+    name: jimmy.easy_skyfandc_pico
+    version: "0.3"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    password: ""
+
+captive_portal:
+
+#Dashboard import if you want to adopt the device on your esphome dashboard
+dashboard_import:
+  package_import_url: github://jeggleston1981/skyfandc/skyfan_pico.yaml
+  
+packages:
+  skyfan.tuya_fan: !include
+    file: tuya_fan.yaml  
+  skyfan.tuya_light: !include
+    file: tuya_light.yaml  
+  skyfan.sensor_tmp117: !include
+    file: sensor_tmp117.yaml 
+  skyfan.sensor_power_fan: !include
+    file: sensor_power_fan.yaml 
+  skyfan.sensor_power_light: !include
+    file: sensor_power_light.yaml
+  skyfan.sensor_rssi: !include
+    file: sensor_rssi.yaml
+
+substitutions:
+  device_name: skyfandc-pico
+  fan_name: SkyFanDC
+  light_name: SkyFanDC-Light
+  tmp117_name: "SkyFanDC TMP117"  
+  skyfan_model: "SKY1203"
+  fan_rssi: "SkyFanDC-RSSI"
+      
+
+#web_server:
+#  port: 80
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+api:
+
+# Logger not using the serial port as tuya needs it
+logger:
+  baud_rate: 0
+
+# Version 0.2 has an i2c JST SH 4Pin Plug and uses the following pins
+# Version 0.1 did use pin 4 as the power pin for the NTC
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+ota:
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+tuya:
+  id: tuyamcu  
